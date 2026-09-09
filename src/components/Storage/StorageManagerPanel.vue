@@ -40,6 +40,9 @@
 						<b-tab-item :label="$t('Drive')" class="scrollbars-light-auto tab-item">
 							<drive-item v-for="(item, index) in diskData" :key="'disk' + index" :item="item"></drive-item>
 						</b-tab-item>
+						<b-tab-item :label="$t('Widget')" class="scrollbars-light-auto tab-item">
+							<storage-widget-settings v-if="activeTab === 2" />
+						</b-tab-item>
 					</b-tabs>
 
 				</div>
@@ -174,10 +177,12 @@ import Popper from 'vue-popperjs';
 import StorageCombination from "./StorageCombination.vue";
 import cToolTip from '@/components/basicComponents/tooltip/tooltip.vue';
 import events from '@/events/events';
+import StorageWidgetSettings from './StorageWidgetSettings.vue';
 
 export default {
 	name: "storage-manager-panel",
 	components: {
+		StorageWidgetSettings,
 		LottieAnimation,
 		ValidationObserver,
 		ValidationProvider,

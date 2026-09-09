@@ -1,5 +1,7 @@
 <template>
 	<div>
+		<storage-widget-volumes v-if="widgetSettings" :settings="widgetSettings" @manage="showDiskManagement" />
+		<template v-else>
 		<!-- Disk Info Start -->
 		<div class="widget has-text-white disk is-relative">
 			<div class="blur-background"></div>
@@ -67,16 +69,20 @@
 		</div>
 
 		<!-- Usb Disk List End -->
+		</template>
 	</div>
 </template>
 
 <script>
 import StorageManagerPanel from '@/components/Storage/StorageManagerPanel.vue'
 import { mixin } from '@/mixins/mixin';
+import StorageWidgetVolumes from '@/components/Storage/StorageWidgetVolumes.vue'
+import { SETTINGS_EVENT, settingsKey, readSettings } from '@/utils/storage-widget.mjs'
 
 export default {
 	// eslint-disable-next-line vue/multi-word-component-names
 	name: 'disks',
+	components: { StorageWidgetVolumes },
 	icon: "storage-outline",
 	title: "Storage Status",
 	initShow: true,
@@ -84,6 +90,7 @@ export default {
 
 	data() {
 		return {
+			widgetSettings: readSettings(localStorage, settingsKey(this.$store.state.user)),
 			totalSize: 0,
 			totalUsed: 0,
 			totalPercent: 0,
@@ -93,10 +100,25 @@ export default {
 	},
 
 	mounted() {
+		window.addEventListener(SETTINGS_EVENT, this.loadWidgetSettings)
+		window.addEventListener('storage', this.onStorageSettings)
 		this.getDiskInfo(this.$store.state.hardwareInfo.sys_disk)
 		this.usbDisks = this.$store.state.hardwareInfo.sys_usb
 	},
+	beforeDestroy() {
+		window.removeEventListener(SETTINGS_EVENT, this.loadWidgetSettings)
+		window.removeEventListener('storage', this.onStorageSettings)
+	},
+	watch: {
+		'$store.state.user.id': 'loadWidgetSettings',
+	},
 	methods: {
+		loadWidgetSettings() {
+			this.widgetSettings = readSettings(localStorage, settingsKey(this.$store.state.user))
+		},
+		onStorageSettings(event) {
+			if (event.key === null || event.key === settingsKey(this.$store.state.user)) this.loadWidgetSettings()
+		},
 		getDiskInfo(diskInfo) {
 			this.totalSize = diskInfo.size
 			this.totalUsed = diskInfo.used

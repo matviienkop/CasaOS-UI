@@ -1,0 +1,32 @@
+name: Storage widget tests
+
+on:
+  pull_request:
+    paths:
+      - 'src/components/Storage/**'
+      - 'src/widgets/Disks.vue'
+      - 'src/utils/storage-widget*'
+      - 'package.json'
+      - '.github/workflows/storage-widget-tests.yml'
+  push:
+    branches:
+      - feat/storage-widget-preferences
+    paths:
+      - 'src/components/Storage/**'
+      - 'src/widgets/Disks.vue'
+      - 'src/utils/storage-widget*'
+      - 'package.json'
+      - '.github/workflows/storage-widget-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm run test:storage-widget
