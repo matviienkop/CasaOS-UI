@@ -28,7 +28,10 @@
         <p v-else-if="!rows.length && !error" class="is-size-7 mt-3">{{ $t('No disks selected') }}</p>
         <div v-for="disk in rows" :key="disk.id" class="disk-health-row mt-3 pt-3">
           <div class="is-flex is-justify-content-space-between is-align-items-center">
-            <strong class="has-text-white">{{ disk.name }}</strong>
+            <div class="is-flex is-align-items-center">
+              <img :src="require('@/assets/img/storage/disk.png')" alt="" width="32" height="32" class="mr-2" />
+              <strong class="has-text-white">{{ disk.name }}</strong>
+            </div>
             <strong class="has-text-white">{{ !error && !disk.missing && disk.temperature > 0 ? disk.temperature + '°C' : 'N/A' }}</strong>
           </div>
           <p v-if="disk.model" class="is-size-7 disk-health-model">{{ disk.model }}</p>
@@ -121,7 +124,7 @@ export default {
       const health = diskHealth(disk)
       return health === 'unknown' ? this.$t('SMART data unavailable') : this.$t(health === 'healthy' ? 'Healthy' : 'Damage')
     },
-    measuredAt(disk) { return new Date(disk.smart_sampled_at * 1000).toLocaleString(this.$i18n.locale.replace('_', '-')) },
+    measuredAt(disk) { return new Date(disk.smart_sampled_at * 1000).toLocaleTimeString(this.$i18n.locale.replace('_', '-')) },
   },
 }
 </script>
