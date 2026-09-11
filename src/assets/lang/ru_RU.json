@@ -409,5 +409,8 @@
   "Installing {title}": "Установка {title}",
   "Legacy app (To be rebuilt).": "Устаревшее приложение (должно быть перестроено).",
   "To be rebuilt.": "Будет перестроено.",
-  "launch-and-open": "Запустить и открыть"
+  "launch-and-open": "Запустить и открыть",
+  "Disk sleeping": "Диск спит",
+  "SMART data unavailable": "Данные SMART недоступны",
+  "SMART last measured": "Последнее измерение"
 }
