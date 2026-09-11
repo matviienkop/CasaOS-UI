@@ -427,5 +427,13 @@
   "launch-and-open": "Запустить и открыть",
   "Disk sleeping": "Диск спит",
   "SMART data unavailable": "Данные SMART недоступны",
-  "SMART last measured": "Последнее измерение"
+  "SMART last measured": "Последнее измерение",
+  "Physical disks": "Диски",
+  "Configure disks": "Настроить список дисков",
+  "Disk information unavailable": "Не удалось получить данные дисков",
+  "Disk selection is saved for this user in this browser.": "Выбор дисков сохраняется для текущего пользователя в этом браузере.",
+  "Disk disconnected": "Диск не подключён",
+  "Could not save disk selection": "Не удалось сохранить выбор дисков",
+  "Loading disk information": "Загрузка данных дисков",
+  "No disks selected": "Диски не выбраны"
 }

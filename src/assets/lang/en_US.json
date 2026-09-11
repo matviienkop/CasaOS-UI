@@ -14,7 +14,7 @@
   "Default widget behavior restored": "Default widget behavior restored",
   "Some selected volumes are unavailable. Total usage cannot be shown.": "Some selected volumes are unavailable. Total usage cannot be shown.",
   "Storage widget preferences are saved for this user in this browser. Without saved preferences, the widget keeps its default behavior.": "Storage widget preferences are saved for this user in this browser. Without saved preferences, the widget keeps its default behavior.",
-  "lang_name":"English",
+  "lang_name": "English",
   "OK": "OK",
   "Cancel": "Cancel",
   "Submit": "Submit",
@@ -427,5 +427,13 @@
   "launch-and-open": "Launch and open",
   "Disk sleeping": "Disk sleeping",
   "SMART data unavailable": "SMART data unavailable",
-  "SMART last measured": "Last measured"
+  "SMART last measured": "Last measured",
+  "Physical disks": "Physical disks",
+  "Configure disks": "Configure disks",
+  "Disk information unavailable": "Disk information unavailable",
+  "Disk selection is saved for this user in this browser.": "Disk selection is saved for this user in this browser.",
+  "Disk disconnected": "Disk disconnected",
+  "Could not save disk selection": "Could not save disk selection",
+  "Loading disk information": "Loading disk information",
+  "No disks selected": "No disks selected"
 }
