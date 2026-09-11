@@ -1,60 +1,4 @@
-<script>
-import { mixin } from '@/mixins/mixin'
-import { listVolumes, selectedVolumes, totalUsage, usagePercent } from '@/utils/storage-widget.mjs'
-
-export default {
-  name: 'StorageWidgetVolumes',
-  mixins: [mixin],
-  props: { settings: { type: Object, required: true } },
-  data() {
-    return { volumes: [], loading: true, error: false, refreshing: false, timer: null, disposed: false }
-  },
-  computed: {
-    selected() { return selectedVolumes(this.settings, this.volumes) },
-    missing() { return this.selected.filter(volume => volume.missing) },
-    rows() {
-      if (this.settings.mode === 'separate')
-        return this.selected
-      if (this.missing.length)
-        return this.missing
-      return [{ id: 'total', name: this.$t('Total of selected volumes'), ...totalUsage(this.selected) }]
-    },
-  },
-  mounted() {
-    this.refresh()
-    this.timer = window.setInterval(this.refresh, 30000)
-  },
-  beforeDestroy() {
-    this.disposed = true
-    window.clearInterval(this.timer)
-  },
-  methods: {
-    usagePercent,
-    async refresh() {
-      if (this.refreshing)
-        return
-      this.refreshing = true
-      try {
-        const response = await this.$api.storage.list({ system: 'show' })
-        if (this.disposed)
-          return
-        this.volumes = listVolumes(response.data.data)
-        this.error = false
-      }
-      catch {
-        if (!this.disposed)
-          this.error = true
-      }
-      finally {
-        if (!this.disposed) {
-          this.loading = false
-          this.refreshing = false
-        }
-      }
-    },
-  },
-}
-</script>
+<script src="./StorageWidgetVolumes.mjs" />
 
 <template>
   <div class="widget has-text-white disk is-relative">
@@ -91,7 +35,7 @@ export default {
               </p>
             </div>
           </div>
-          <b-progress v-if="!volume.missing" :type="usagePercent(volume) | getProgressType" :value="usagePercent(volume)" class="mt-2" size="is-small" />
+          <b-progress v-if="!volume.missing" :type="progressType(usagePercent(volume))" :value="usagePercent(volume)" class="mt-2" size="is-small" />
         </div>
         <p v-if="settings.mode === 'total' && missing.length" class="mt-3 has-text-warning">
           {{ $t('Some selected volumes are unavailable. Total usage cannot be shown.') }}

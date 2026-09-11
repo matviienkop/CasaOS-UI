@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
-import vm from 'node:vm'
+import settingsDefinition from '../components/Storage/StorageWidgetSettings.mjs'
+import volumesDefinition from '../components/Storage/StorageWidgetVolumes.mjs'
 import * as helpers from './storage-widget.mjs'
 
 const { readSettings, settingsKey, listVolumes, selectedVolumes, totalUsage, usagePercent } = helpers
@@ -59,21 +59,24 @@ test('usage percentage handles empty and out-of-range values', () => {
   assert.equal(usagePercent({ size: 100, avail: -10 }), 100)
 })
 
-function component(name, context = {}) {
-  const source = readFileSync(new URL(`../components/Storage/${name}.vue`, import.meta.url), 'utf8')
-  const script = source.split('<script>')[1].split('</script>')[0].replace(/^import\b[\s\S]+?from\s+['"][^'"]+['"];?[ \t]*$/gm, '').replace('export default', 'result =')
-  const sandbox = { ...helpers, mixin: {}, result: null, ...context }
-  vm.runInNewContext(script, sandbox)
-  return sandbox.result
-}
-
-function settingsPanel(storage) {
+function settingsPanel(t, storage) {
   const emitted = []
-  const definition = component('StorageWidgetSettings', {
+  const globals = {
     localStorage: storage,
     window: { dispatchEvent: event => emitted.push(event) },
     CustomEvent: class { constructor(type) { this.type = type } },
-  })
+  }
+  for (const [key, value] of Object.entries(globals)) {
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, key)
+    Object.defineProperty(globalThis, key, { configurable: true, value })
+    t.after(() => {
+      if (descriptor)
+        Object.defineProperty(globalThis, key, descriptor)
+      else
+        delete globalThis[key]
+    })
+  }
+  const definition = settingsDefinition
   const panel = { $store: { state: { user: { id: 1 } } }, $t: text => text, $buefy: { toast: { open() {} } } }
   Object.assign(panel, definition.data.call(panel))
   Object.entries(definition.methods).forEach(([key, method]) => {
@@ -83,9 +86,9 @@ function settingsPanel(storage) {
   return { panel, emitted }
 }
 
-test('editing does not persist; save applies preferences; reset removes them', () => {
+test('editing does not persist; save applies preferences; reset removes them', (t) => {
   const values = new Map()
-  const { panel, emitted } = settingsPanel({ getItem: key => values.get(key), setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key) })
+  const { panel, emitted } = settingsPanel(t, { getItem: key => values.get(key), setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key) })
   panel.volumes = [raid]
   panel.selected = [raid.id]
   assert.equal(values.size, 0)
@@ -98,8 +101,8 @@ test('editing does not persist; save applies preferences; reset removes them', (
   assert.equal(emitted.length, 2)
 })
 
-test('storage write failure does not apply an unsaved selection', () => {
-  const { panel, emitted } = settingsPanel({ getItem: () => null, setItem() {
+test('storage write failure does not apply an unsaved selection', (t) => {
+  const { panel, emitted } = settingsPanel(t, { getItem: () => null, setItem() {
     throw new Error('quota')
   } })
   panel.volumes = [raid]
@@ -111,14 +114,14 @@ test('storage write failure does not apply an unsaved selection', () => {
 })
 
 test('aggregate mode with a missing volume does not claim partial totals are complete', () => {
-  const definition = component('StorageWidgetVolumes')
+  const definition = volumesDefinition
   const missing = selectedVolumes(settings, [])
   const rows = definition.computed.rows.call({ settings: { mode: 'total' }, missing, selected: [raid, ...missing] })
   assert.equal(rows, missing)
 })
 
 test('custom widget distinguishes API errors from missing disks and recovers', async () => {
-  const definition = component('StorageWidgetVolumes')
+  const definition = volumesDefinition
   const state = { ...definition.data(), $api: { storage: { list: async () => {
     throw new Error('network')
   } } } }
@@ -132,11 +135,19 @@ test('custom widget distinguishes API errors from missing disks and recovers', a
 })
 
 test('unmounted custom widget ignores late requests', async () => {
-  const definition = component('StorageWidgetVolumes')
+  const definition = volumesDefinition
   const state = { ...definition.data(), $api: { storage: { list: async () => {
     state.disposed = true
     return { data: { data: [rawStorage] } }
   } } } }
   await definition.methods.refresh.call(state)
   assert.equal(state.volumes.length, 0)
+})
+
+test('volume formatting and progress colors preserve display boundaries', () => {
+  assert.equal(settingsDefinition.methods.renderSize(2048), '2 KB')
+  assert.equal(volumesDefinition.methods.renderSize(0), '0 Bytes')
+  for (const [percent, color] of [[0, 'is-primary'], [79, 'is-primary'], [80, 'is-warning'], [89, 'is-warning'], [90, 'is-danger'], [100, 'is-danger']]) {
+    assert.equal(volumesDefinition.methods.progressType(percent), color)
+  }
 })
