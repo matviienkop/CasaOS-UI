@@ -424,5 +424,8 @@
   "Installing {title}": "Installing {title}",
   "Legacy app (To be rebuilt).": "Legacy app (To be rebuilt).",
   "To be rebuilt.": "To be rebuilt.",
-  "launch-and-open": "Launch and open"
+  "launch-and-open": "Launch and open",
+  "Disk sleeping": "Disk sleeping",
+  "SMART data unavailable": "SMART data unavailable",
+  "SMART last measured": "Last measured"
 }

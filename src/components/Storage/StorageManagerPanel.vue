@@ -206,6 +206,9 @@ export default {
 			createStorageSeiral: "",
 			createStorageType: "",
 			diskData: [],
+			diskRefreshTimer: null,
+			diskRefreshPending: false,
+			diskPanelDisposed: false,
 			unDiskData: [],
 			storageData: [],
 			mergeConbinationsStorageData: [],
@@ -269,16 +272,37 @@ export default {
 			_this.getDiskList()
 		}, 150);
 
+		this.diskRefreshTimer = setInterval(() => this.refreshDiskInfo(), 30000);
+
 		this.$EventBus.$on(events.REFRESH_DISKLIST, () => {
 			this.getDiskList()
 		});
 	},
 
 	beforeDestroy() {
+		this.diskPanelDisposed = true;
+		clearInterval(this.diskRefreshTimer);
 		this.$EventBus.$off(events.REFRESH_DISKLIST)
 	},
 
 	methods: {
+		async refreshDiskInfo() {
+			if (this.diskRefreshPending || this.diskPanelDisposed) return;
+			this.diskRefreshPending = true;
+			try {
+				const response = await this.$api.disks.getDiskList();
+				if (!this.diskPanelDisposed) {
+					this.diskData = response.data.data.disks;
+					this.unDiskData = response.data.data.avail;
+				}
+			} catch {
+				if (!this.diskPanelDisposed) {
+					this.diskData = this.diskData.map(disk => ({ ...disk, temperature: 0, smart_state: 'unavailable' }));
+				}
+			} finally {
+				this.diskRefreshPending = false;
+			}
+		},
 		/**
 		 * @description: Get disk list
 		 * @param {}
@@ -286,14 +310,7 @@ export default {
 		 */
 		async getDiskList(showDefault = false) {
 
-			// get disk list
-			try {
-				const diskRes = await this.$api.disks.getDiskList()
-				this.diskData = diskRes.data.data.disks
-				this.unDiskData = diskRes.data.data.avail
-			} catch (error) {
-				console.log(error.response.message);
-			}
+			await this.refreshDiskInfo();
 
 			// get storage list
 			// TODO: the part is repetition
