@@ -29,7 +29,7 @@
         <div v-for="disk in rows" :key="disk.id" class="disk-health-row mt-3 pt-3">
           <div class="is-flex is-justify-content-space-between is-align-items-center">
             <strong class="has-text-white">{{ disk.name }}</strong>
-            <strong>{{ !error && !disk.missing && disk.temperature > 0 ? disk.temperature + '°C' : 'N/A' }}</strong>
+            <strong class="has-text-white">{{ !error && !disk.missing && disk.temperature > 0 ? disk.temperature + '°C' : 'N/A' }}</strong>
           </div>
           <p v-if="disk.model" class="is-size-7 disk-health-model">{{ disk.model }}</p>
           <p class="is-size-7" :class="healthClass(disk)">{{ healthLabel(disk) }}</p>
